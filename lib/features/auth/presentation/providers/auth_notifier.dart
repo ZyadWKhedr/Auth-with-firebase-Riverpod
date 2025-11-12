@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/usecases/sign_in_apple.dart';
@@ -7,6 +8,7 @@ import '../../domain/usecases/sign_in_phone.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/sign_up_email.dart';
 import '../states/auth_state.dart';
+import 'auth_provider.dart'; // Import providers
 
 /// Notifier for managing authentication state in Riverpod.
 /// Handles authentication operations and updates the AuthState accordingly.
@@ -96,6 +98,32 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _signInWithAppleUC();
       state = state.copyWith(status: AuthStateStatus.success, user: user);
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStateStatus.error,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Initiates phone sign-in process.
+  /// Updates state to loading, then success or error.
+  Future<void> signInWithPhone({
+    required String phoneNumber,
+    required void Function(String verificationId, int? resendToken) codeSent,
+    required void Function(FirebaseAuthException e) verificationFailed,
+    required void Function(PhoneAuthCredential credential) codeAutoRetrieval,
+  }) async {
+    state = state.copyWith(status: AuthStateStatus.loading);
+    try {
+      await _signInWithPhoneUC(
+        phoneNumber: phoneNumber,
+        codeSent: codeSent,
+        verificationFailed: verificationFailed,
+        codeAutoRetrieval: codeAutoRetrieval,
+      );
+      // Note: Phone sign-in is asynchronous; success is handled via callbacks
+      state = state.copyWith(status: AuthStateStatus.success);
     } catch (e) {
       state = state.copyWith(
         status: AuthStateStatus.error,

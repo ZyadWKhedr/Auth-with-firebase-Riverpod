@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../entities/user.dart';
 
 abstract class AuthRepository {
@@ -9,7 +11,7 @@ abstract class AuthRepository {
   Future<void> signInWithPhone({
     required String phoneNumber,
     required void Function(String verificationId, int? resendToken) codeSent,
-    required void Function(Exception e) verificationFailed,
-    required void Function(dynamic credential) codeAutoRetrieval,
+    required void Function(FirebaseAuthException e) verificationFailed,
+    required void Function(PhoneAuthCredential credential) codeAutoRetrieval,
   });
 }
